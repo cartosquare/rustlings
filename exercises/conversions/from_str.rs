@@ -11,7 +11,16 @@ struct Person {
     age: usize,
 }
 
-// I AM NOT DONE
+#[derive(Debug, Clone)]
+struct InvalidArgument;
+
+impl std::fmt::Display for InvalidArgument {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "invalid argument")
+    }
+}
+
+impl error::Error for InvalidArgument {}
 
 // Steps:
 // 1. If the length of the provided string is 0, an error should be returned
@@ -26,6 +35,23 @@ struct Person {
 impl FromStr for Person {
     type Err = Box<dyn error::Error>;
     fn from_str(s: &str) -> Result<Person, Self::Err> {
+        if s.len() == 0 {
+            return Err(InvalidArgument.into());
+        }
+        let items: Vec<&str> = s.split(",").collect();
+        if items.len() != 2 {
+            return Err(InvalidArgument.into());
+        }
+        if items[0].len() == 0 {
+            return Err(InvalidArgument.into());
+        }
+        match items[1].parse::<usize>() {
+            Ok(age) => Ok(Person {
+                name: items[0].to_string(),
+                age: age,
+            }),
+            Err(_) => Err(InvalidArgument.into()),
+        }
     }
 }
 
